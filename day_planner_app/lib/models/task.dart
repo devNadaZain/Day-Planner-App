@@ -13,6 +13,8 @@ class Task {
   final DateTime dateTime;
   @HiveField(4)
   final bool isCompleted;
+  @HiveField(5)
+  final DateTime? reminderDateTime;
 
   Task({
     required this.id,
@@ -20,5 +22,6 @@ class Task {
     required this.description,
     required this.dateTime,
     this.isCompleted = false,
+    this.reminderDateTime,
   });
 }

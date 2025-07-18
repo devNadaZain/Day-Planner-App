@@ -597,6 +597,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     DateTime? selectedTime;
+    Duration? selectedReminderOffset;
+    final List<Duration> reminderOptions = [
+      Duration.zero,
+      const Duration(minutes: 5),
+      const Duration(minutes: 30),
+      const Duration(hours: 1),
+      const Duration(days: 1),
+    ];
+    final List<String> reminderLabels = [
+      'At time',
+      '5 min before',
+      '30 min before',
+      '1 hour before',
+      '1 day before',
+    ];
     showDialog(
       context: context,
       builder: (context) {
@@ -699,6 +714,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<Duration>(
+                      value: selectedReminderOffset ?? Duration.zero,
+                      decoration: const InputDecoration(
+                        labelText: 'Remind me',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                        ),
+                      ),
+                      items: List.generate(
+                        reminderOptions.length,
+                        (i) => DropdownMenuItem(
+                          value: reminderOptions[i],
+                          child: Text(reminderLabels[i]),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedReminderOffset = value;
+                        });
+                      },
+                    ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -714,11 +751,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             onPressed: () {
                               if (titleController.text.isNotEmpty &&
                                   selectedTime != null) {
+                                final reminderDateTime =
+                                    selectedReminderOffset == null
+                                    ? selectedTime
+                                    : selectedTime!.subtract(
+                                        selectedReminderOffset!,
+                                      );
                                 final task = Task(
                                   id: const Uuid().v4(),
                                   title: titleController.text,
                                   description: descController.text,
                                   dateTime: selectedTime!,
+                                  reminderDateTime: reminderDateTime,
                                 );
                                 Provider.of<TaskProvider>(
                                   context,

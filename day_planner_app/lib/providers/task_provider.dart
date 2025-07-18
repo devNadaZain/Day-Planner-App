@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../services/local_storage_service.dart';
+import '../services/notification_service.dart';
 
 class TaskProvider extends ChangeNotifier {
   final List<Task> _tasks = [];
@@ -16,6 +17,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> addTask(Task task) async {
     _tasks.add(task);
     await LocalStorageService.addTask(task);
+    await NotificationService.scheduleNotification(task);
     notifyListeners();
   }
 
@@ -24,14 +26,20 @@ class TaskProvider extends ChangeNotifier {
     if (index != -1) {
       _tasks[index] = updatedTask;
       await LocalStorageService.updateTask(updatedTask);
+      await NotificationService.updateNotification(updatedTask);
       notifyListeners();
     }
   }
 
   Future<void> deleteTask(String id) async {
-    _tasks.removeWhere((task) => task.id == id);
-    await LocalStorageService.deleteTask(id);
-    notifyListeners();
+    final index = _tasks.indexWhere((task) => task.id == id);
+    if (index != -1) {
+      final task = _tasks[index];
+      _tasks.removeAt(index);
+      await LocalStorageService.deleteTask(id);
+      await NotificationService.cancelNotification(id);
+      notifyListeners();
+    }
   }
 
   Future<void> toggleTask(String id) async {
@@ -44,9 +52,11 @@ class TaskProvider extends ChangeNotifier {
         description: task.description,
         dateTime: task.dateTime,
         isCompleted: !task.isCompleted,
+        reminderDateTime: task.reminderDateTime,
       );
       _tasks[index] = updatedTask;
       await LocalStorageService.updateTask(updatedTask);
+      await NotificationService.updateNotification(updatedTask);
       notifyListeners();
     }
   }
