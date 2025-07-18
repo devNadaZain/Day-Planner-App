@@ -6,6 +6,8 @@ import '../models/task.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math' as math;
 import 'dart:ui';
+import '../providers/theme_provider.dart';
+import 'calendar_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -89,6 +91,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: const Color(0xFF2D3748),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_today),
+            tooltip: 'Calendar View',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CalendarScreen()),
+              );
+            },
+          ),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode
+                      ? Icons.wb_sunny_rounded
+                      : Icons.nightlight_round,
+                  color: themeProvider.isDarkMode
+                      ? Colors.amber
+                      : Colors.indigo,
+                ),
+                tooltip: themeProvider.isDarkMode
+                    ? 'Switch to Light Mode'
+                    : 'Switch to Dark Mode',
+                onPressed: () => themeProvider.toggleTheme(),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
