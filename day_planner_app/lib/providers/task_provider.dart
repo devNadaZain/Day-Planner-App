@@ -19,6 +19,21 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateTask(Task updatedTask) async {
+    final index = _tasks.indexWhere((task) => task.id == updatedTask.id);
+    if (index != -1) {
+      _tasks[index] = updatedTask;
+      await LocalStorageService.updateTask(updatedTask);
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteTask(String id) async {
+    _tasks.removeWhere((task) => task.id == id);
+    await LocalStorageService.deleteTask(id);
+    notifyListeners();
+  }
+
   Future<void> toggleTask(String id) async {
     final index = _tasks.indexWhere((task) => task.id == id);
     if (index != -1) {

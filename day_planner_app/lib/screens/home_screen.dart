@@ -54,6 +54,39 @@ class HomeScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 13),
                     ),
                     isThreeLine: true,
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Task'),
+                            content: const Text(
+                              'Are you sure you want to delete this task?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await taskProvider.deleteTask(task.id);
+                        }
+                      },
+                    ),
+                    onTap: () => _showEditTaskDialog(context, task),
                   ),
                 );
               },
@@ -149,6 +182,94 @@ class HomeScreen extends StatelessWidget {
                     }
                   },
                   child: const Text('Add'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditTaskDialog(BuildContext context, Task task) {
+    final titleController = TextEditingController(text: task.title);
+    final descController = TextEditingController(text: task.description);
+    DateTime selectedTime = task.dateTime;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Edit Task'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(labelText: 'Title'),
+                    ),
+                    TextField(
+                      controller: descController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(_formatTime(selectedTime)),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () async {
+                            final now = DateTime.now();
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.fromDateTime(selectedTime),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                selectedTime = DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                  picked.hour,
+                                  picked.minute,
+                                );
+                              });
+                            }
+                          },
+                          child: const Text('Pick Time'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (titleController.text.isNotEmpty) {
+                      final updatedTask = Task(
+                        id: task.id,
+                        title: titleController.text,
+                        description: descController.text,
+                        dateTime: selectedTime,
+                        isCompleted: task.isCompleted,
+                      );
+                      await Provider.of<TaskProvider>(
+                        context,
+                        listen: false,
+                      ).updateTask(updatedTask);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Text('Save'),
                 ),
               ],
             );

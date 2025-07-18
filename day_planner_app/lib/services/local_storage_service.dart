@@ -23,4 +23,8 @@ class LocalStorageService {
   static Future<void> updateTask(Task task) async {
     await _taskBox?.put(task.id, task);
   }
+
+  static Future<void> deleteTask(String id) async {
+    await _taskBox?.delete(id);
+  }
 }
