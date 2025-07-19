@@ -34,7 +34,7 @@ A beautiful, feature-rich Flutter day planner application with a modern, creativ
 
 ## 📸 Screenshots
 
-> __
+> \_\_
 
 ---
 
@@ -211,7 +211,6 @@ setx PATH "$env:PATH;C:\Users\USER\AppData\Local\Android\Sdk\cmdline-tools\lates
 
 ---
 
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -221,13 +220,5 @@ setx PATH "$env:PATH;C:\Users\USER\AppData\Local\Android\Sdk\cmdline-tools\lates
 5. Submit a pull request
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-
 
 **Happy Planning! 🎉**
