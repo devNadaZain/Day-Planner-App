@@ -10,27 +10,31 @@ class ThemeProvider extends ChangeNotifier {
 
   bool get isDarkMode => _isDarkMode;
 
-  // Light Theme Colors
   static const Color lightPrimary = Color(0xFF667EEA);
   static const Color lightSecondary = Color(0xFF764BA2);
+  static const Color lightAccent = Color(0xFFF093FB);
   static const Color lightBackground = Color(0xFFF8FAFF);
   static const Color lightSurface = Color(0xFFE2E8F0);
   static const Color lightCard = Colors.white;
   static const Color lightText = Color(0xFF2D3748);
   static const Color lightTextSecondary = Color(0xFF718096);
   static const Color lightSuccess = Color(0xFF38B2AC);
-  static const Color lightError = Colors.red;
+  static const Color lightError = Color(0xFFFF6B6B);
+  static const Color lightWarning = Color(0xFFFFE66D);
 
-  // Dark Theme Colors
+  // Enhanced Dark Theme Colors
   static const Color darkPrimary = Color(0xFF8B5CF6);
   static const Color darkSecondary = Color(0xFFA855F7);
-  static const Color darkBackground = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkCard = Color(0xFF334155);
-  static const Color darkText = Color(0xFFF1F5F9);
+  static const Color darkAccent = Color(0xFFEC4899);
+  static const Color darkBackground = Color(0xFF0A0A0A);
+  static const Color darkSurface = Color(0xFF1A1A1A);
+  static const Color darkCard = Color(0xFF2A2A2A);
+  static const Color darkCardHover = Color(0xFF3A3A3A);
+  static const Color darkText = Color(0xFFF8FAFC);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
   static const Color darkSuccess = Color(0xFF10B981);
   static const Color darkError = Color(0xFFEF4444);
+  static const Color darkWarning = Color(0xFFF59E0B);
 
   Future<void> init() async {
     _themeBox = await Hive.openBox(_themeBoxName);
@@ -43,6 +47,57 @@ class ThemeProvider extends ChangeNotifier {
     await _themeBox.put(_isDarkModeKey, _isDarkMode);
     notifyListeners();
   }
+
+  // Get current theme colors
+  Color get primaryColor => _isDarkMode ? darkPrimary : lightPrimary;
+  Color get secondaryColor => _isDarkMode ? darkSecondary : lightSecondary;
+  Color get accentColor => _isDarkMode ? darkAccent : lightAccent;
+  Color get backgroundColor => _isDarkMode ? darkBackground : lightBackground;
+  Color get surfaceColor => _isDarkMode ? darkSurface : lightSurface;
+  Color get cardColor => _isDarkMode ? darkCard : lightCard;
+  Color get cardHoverColor => _isDarkMode ? darkCardHover : lightCard;
+  Color get textColor => _isDarkMode ? darkText : lightText;
+  Color get textSecondaryColor =>
+      _isDarkMode ? darkTextSecondary : lightTextSecondary;
+  Color get successColor => _isDarkMode ? darkSuccess : lightSuccess;
+  Color get errorColor => _isDarkMode ? darkError : lightError;
+  Color get warningColor => _isDarkMode ? darkWarning : lightWarning;
+
+  // Get gradient colors
+  List<Color> get primaryGradient => _isDarkMode
+      ? [darkPrimary, darkSecondary, darkAccent]
+      : [lightPrimary, lightSecondary, lightAccent];
+
+  List<Color> get cardGradient =>
+      _isDarkMode ? [darkCard, darkCardHover] : [lightCard, lightSurface];
+
+  List<Color> get successGradient => _isDarkMode
+      ? [darkSuccess, Color(0xFF059669)]
+      : [lightSuccess, Color(0xFF319795)];
+
+  // Enhanced completed task gradients using app's primary colors with subtle variation
+  List<Color> get completedTaskGradient => _isDarkMode
+      ? [
+          Color(0xFF667EEA).withValues(alpha: 0.8),
+          Color(0xFF764BA2).withValues(alpha: 0.8),
+        ] // App primary colors with transparency
+      : [
+          Color(0xFF667EEA).withValues(alpha: 0.1),
+          Color(0xFF764BA2).withValues(alpha: 0.1),
+        ]; // App primary colors with transparency
+
+  // Completed task text colors using app's text colors
+  Color get completedTaskTextColor => _isDarkMode
+      ? darkText.withValues(alpha: 0.7) // App text color with transparency
+      : lightText.withValues(alpha: 0.7); // App text color with transparency
+
+  Color get completedTaskTextSecondaryColor => _isDarkMode
+      ? darkTextSecondary.withValues(
+          alpha: 0.6,
+        ) // App secondary text with transparency
+      : lightTextSecondary.withValues(
+          alpha: 0.6,
+        ); // App secondary text with transparency
 
   ThemeData get lightTheme {
     return ThemeData(
@@ -89,7 +144,9 @@ class ThemeProvider extends ChangeNotifier {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: lightTextSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(
+            color: lightTextSecondary.withValues(alpha: 0.3),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -149,7 +206,9 @@ class ThemeProvider extends ChangeNotifier {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: darkTextSecondary.withOpacity(0.3)),
+          borderSide: BorderSide(
+            color: darkTextSecondary.withValues(alpha: 0.3),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

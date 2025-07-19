@@ -22,21 +22,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _confettiController;
   late AnimationController _slideController;
   late AnimationController _pulseController;
+  late AnimationController _shimmerController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _confettiAnimation;
   late Animation<double> _slideAnimation;
   late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
     _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
     _confettiController = AnimationController(
@@ -49,6 +51,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _shimmerController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
@@ -72,10 +78,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
+    _shimmerAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+
     _fadeController.forward();
     _scaleController.forward();
     _slideController.forward();
     _pulseController.repeat(reverse: true);
+    _shimmerController.repeat();
   }
 
   @override
@@ -85,51 +96,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _confettiController.dispose();
     _slideController.dispose();
     _pulseController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final tasks = taskProvider.tasks;
     final completedTasks = tasks.where((task) => task.isCompleted).length;
     final totalTasks = tasks.length;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: _buildEnhancedFAB(),
       body: Stack(
         children: [
-          // Main content
+          // Enhanced Background with Theme Support
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF667EEA),
-                  const Color(0xFF764BA2),
-                  const Color(0xFFF093FB),
-                ],
+                colors: themeProvider.primaryGradient,
               ),
             ),
             child: SafeArea(
               child: Column(
                 children: [
                   // Enhanced App Bar
-                  _buildEnhancedAppBar(),
+                  _buildEnhancedAppBar(themeProvider),
 
                   // Stats Card
                   if (totalTasks > 0)
-                    _buildStatsCard(completedTasks, totalTasks),
+                    _buildStatsCard(completedTasks, totalTasks, themeProvider),
 
                   // Main Content
                   Expanded(
                     child: Container(
                       margin: const EdgeInsets.only(top: 20),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
+                      decoration: BoxDecoration(
+                        color: themeProvider.cardColor,
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(30),
                         ),
@@ -139,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(30),
                         ),
-                        child: _buildTaskList(tasks),
+                        child: _buildTaskList(tasks, themeProvider),
                       ),
                     ),
                   ),
@@ -160,58 +168,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+      floatingActionButton: _buildEnhancedFAB(themeProvider),
     );
   }
 
-  Widget _buildEnhancedAppBar() {
+  Widget _buildEnhancedAppBar(ThemeProvider themeProvider) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(
         children: [
-          // Profile Section
+          // Enhanced Profile Section
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
+              color: themeProvider.cardColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(25),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: themeProvider.cardColor.withValues(alpha: 0.3),
                 width: 1,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                // Enhanced Avatar with Shimmer Effect
+                AnimatedBuilder(
+                  animation: _shimmerAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            themeProvider.primaryColor,
+                            themeProvider.secondaryColor,
+                            themeProvider.accentColor,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(22.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: themeProvider.primaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 15),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Welcome back!',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: themeProvider.cardColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Let\'s plan your day',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: themeProvider.cardColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -224,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           const Spacer(),
 
-          // Action Buttons
+          // Enhanced Action Buttons
           Row(
             children: [
               _buildActionButton(
@@ -236,17 +273,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                 },
+                themeProvider: themeProvider,
               ),
               const SizedBox(width: 12),
-              Consumer<ThemeProvider>(
-                builder: (context, themeProvider, child) {
-                  return _buildActionButton(
-                    icon: themeProvider.isDarkMode
-                        ? Icons.wb_sunny_rounded
-                        : Icons.nightlight_round,
-                    onTap: () => themeProvider.toggleTheme(),
-                  );
-                },
+              _buildActionButton(
+                icon: themeProvider.isDarkMode
+                    ? Icons.wb_sunny_rounded
+                    : Icons.nightlight_round,
+                onTap: () => themeProvider.toggleTheme(),
+                themeProvider: themeProvider,
               ),
             ],
           ),
@@ -258,25 +293,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildActionButton({
     required IconData icon,
     required VoidCallback onTap,
+    required ThemeProvider themeProvider,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: themeProvider.cardColor.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.3),
+            color: themeProvider.cardColor.withValues(alpha: 0.3),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon, color: themeProvider.cardColor, size: 24),
       ),
     );
   }
 
-  Widget _buildStatsCard(int completedTasks, int totalTasks) {
+  Widget _buildStatsCard(
+    int completedTasks,
+    int totalTasks,
+    ThemeProvider themeProvider,
+  ) {
     final progress = totalTasks > 0 ? completedTasks / totalTasks : 0.0;
 
     return AnimatedBuilder(
@@ -290,12 +337,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: themeProvider.cardColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: themeProvider.cardColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -303,10 +357,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Today\'s Progress',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: themeProvider.cardColor,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -315,7 +369,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Text(
                           '$completedTasks of $totalTasks completed',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: themeProvider.cardColor.withValues(
+                              alpha: 0.8,
+                            ),
                             fontSize: 14,
                           ),
                         ),
@@ -333,19 +389,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 8,
-                            backgroundColor: Colors.white.withValues(
+                            backgroundColor: themeProvider.cardColor.withValues(
                               alpha: 0.3,
                             ),
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              themeProvider.cardColor,
                             ),
                           ),
                         ),
                         Center(
                           child: Text(
                             '${(progress * 100).toInt()}%',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: themeProvider.cardColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -363,27 +419,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskList(List<Task> tasks) {
+  Widget _buildTaskList(List<Task> tasks, ThemeProvider themeProvider) {
     return tasks.isEmpty
-        ? _buildEmptyState()
+        ? _buildEmptyState(themeProvider)
         : RefreshIndicator(
             onRefresh: () async {
               await Future.delayed(const Duration(milliseconds: 1000));
               setState(() {});
             },
-            color: const Color(0xFF667EEA),
+            color: themeProvider.primaryColor,
             child: ListView.builder(
               padding: const EdgeInsets.all(20),
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 final task = tasks[index];
-                return _buildEnhancedTaskCard(task, index);
+                return _buildEnhancedTaskCard(task, index, themeProvider);
               },
             ),
           );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeProvider themeProvider) {
     return Center(
       child: AnimatedBuilder(
         animation: _scaleAnimation,
@@ -393,24 +449,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Animated Icon
+                // Enhanced Animated Icon
                 AnimatedBuilder(
                   animation: _pulseAnimation,
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _pulseAnimation.value.clamp(0.5, 2.0),
                       child: Container(
-                        padding: const EdgeInsets.all(30),
+                        padding: const EdgeInsets.all(35),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                          gradient: LinearGradient(
+                            colors: themeProvider.primaryGradient,
                           ),
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(35),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(
-                                0xFF667EEA,
-                              ).withValues(alpha: 0.3),
+                              color: themeProvider.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 30,
                               offset: const Offset(0, 15),
                             ),
@@ -426,12 +482,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   },
                 ),
                 const SizedBox(height: 30),
-                const Text(
+                Text(
                   'No tasks yet!',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+                    color: themeProvider.textColor,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -439,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   'Tap the + button to add your first task',
                   style: TextStyle(
                     fontSize: 16,
-                    color: const Color(0xFF2D3748).withValues(alpha: 0.7),
+                    color: themeProvider.textColor.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -449,14 +505,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF667EEA).withValues(alpha: 0.1),
+                    color: themeProvider.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
+                  child: Text(
                     '✨ Start planning your perfect day',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF667EEA),
+                      color: themeProvider.primaryColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -469,7 +525,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEnhancedTaskCard(Task task, int index) {
+  Widget _buildEnhancedTaskCard(
+    Task task,
+    int index,
+    ThemeProvider themeProvider,
+  ) {
     final taskProvider = Provider.of<TaskProvider>(context);
 
     return AnimatedBuilder(
@@ -484,14 +544,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 gradient: task.isCompleted
                     ? LinearGradient(
-                        colors: [
-                          const Color(0xFFE6FFFA),
-                          const Color(0xFFB2F5EA),
-                        ],
+                        colors: themeProvider.completedTaskGradient,
                       )
-                    : LinearGradient(
-                        colors: [Colors.white, const Color(0xFFF7FAFC)],
-                      ),
+                    : LinearGradient(colors: themeProvider.cardGradient),
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
@@ -515,7 +570,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         child: Row(
                           children: [
                             // Enhanced Checkbox
-                            _buildEnhancedCheckbox(task, taskProvider),
+                            _buildEnhancedCheckbox(
+                              task,
+                              taskProvider,
+                              themeProvider,
+                            ),
                             const SizedBox(width: 20),
 
                             // Task Content
@@ -523,17 +582,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildTaskTitle(task),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildTaskTitle(
+                                          task,
+                                          themeProvider,
+                                        ),
+                                      ),
+                                      if (task.isCompleted)
+                                        Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: themeProvider.primaryColor
+                                                .withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.check_circle,
+                                            size: 16,
+                                            color: themeProvider.primaryColor,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 8),
-                                  _buildTaskDescription(task),
+                                  _buildTaskDescription(task, themeProvider),
                                   const SizedBox(height: 12),
-                                  _buildTaskTimeAndPriority(task),
+                                  _buildTaskTimeAndPriority(
+                                    task,
+                                    themeProvider,
+                                  ),
                                 ],
                               ),
                             ),
 
                             // Action Buttons
-                            _buildTaskActions(task, taskProvider),
+                            _buildTaskActions(
+                              task,
+                              taskProvider,
+                              themeProvider,
+                            ),
                           ],
                         ),
                       ),
@@ -548,7 +639,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEnhancedCheckbox(Task task, TaskProvider taskProvider) {
+  Widget _buildEnhancedCheckbox(
+    Task task,
+    TaskProvider taskProvider,
+    ThemeProvider themeProvider,
+  ) {
     return GestureDetector(
       onTap: () {
         taskProvider.toggleTask(task.id);
@@ -565,17 +660,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: task.isCompleted
-              ? const LinearGradient(
-                  colors: [Color(0xFF38B2AC), Color(0xFF319795)],
-                )
-              : LinearGradient(
-                  colors: [const Color(0xFF667EEA), const Color(0xFF764BA2)],
-                ),
+              ? LinearGradient(colors: themeProvider.completedTaskGradient)
+              : LinearGradient(colors: themeProvider.primaryGradient),
           boxShadow: [
             BoxShadow(
               color: task.isCompleted
-                  ? const Color(0xFF38B2AC).withValues(alpha: 0.3)
-                  : const Color(0xFF667EEA).withValues(alpha: 0.3),
+                  ? themeProvider.completedTaskTextColor.withValues(alpha: 0.3)
+                  : themeProvider.primaryColor.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -588,29 +679,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskTitle(Task task) {
+  Widget _buildTaskTitle(Task task, ThemeProvider themeProvider) {
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 300),
       style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
         color: task.isCompleted
-            ? const Color(0xFF38B2AC)
-            : const Color(0xFF2D3748),
+            ? themeProvider.completedTaskTextColor
+            : themeProvider.textColor,
         decoration: task.isCompleted ? TextDecoration.lineThrough : null,
       ),
       child: Text(task.title),
     );
   }
 
-  Widget _buildTaskDescription(Task task) {
+  Widget _buildTaskDescription(Task task, ThemeProvider themeProvider) {
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 300),
       style: TextStyle(
         fontSize: 14,
         color: task.isCompleted
-            ? const Color(0xFF38B2AC).withValues(alpha: 0.7)
-            : const Color(0xFF718096),
+            ? themeProvider.completedTaskTextSecondaryColor
+            : themeProvider.textSecondaryColor,
       ),
       child: Text(
         task.description,
@@ -620,21 +711,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskTimeAndPriority(Task task) {
+  Widget _buildTaskTimeAndPriority(Task task, ThemeProvider themeProvider) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-            ),
+            gradient: task.isCompleted
+                ? LinearGradient(colors: themeProvider.completedTaskGradient)
+                : LinearGradient(colors: themeProvider.primaryGradient),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             _formatTime(task.dateTime),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: task.isCompleted
+                  ? themeProvider.completedTaskTextColor
+                  : Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -645,23 +738,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+              color: themeProvider.errorColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+                color: themeProvider.errorColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.alarm, size: 12, color: Color(0xFFFF6B6B)),
-                SizedBox(width: 4),
+                Icon(Icons.alarm, size: 12, color: themeProvider.errorColor),
+                const SizedBox(width: 4),
                 Text(
                   'Reminder',
                   style: TextStyle(
                     fontSize: 10,
-                    color: Color(0xFFFF6B6B),
+                    color: themeProvider.errorColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -672,19 +765,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskActions(Task task, TaskProvider taskProvider) {
+  Widget _buildTaskActions(
+    Task task,
+    TaskProvider taskProvider,
+    ThemeProvider themeProvider,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildActionIcon(
           icon: Icons.edit,
-          color: const Color(0xFF667EEA),
+          color: themeProvider.primaryColor,
           onTap: () => _showEditTaskDialog(context, task),
         ),
         const SizedBox(width: 8),
         _buildActionIcon(
           icon: Icons.delete,
-          color: const Color(0xFFFF6B6B),
+          color: themeProvider.errorColor,
           onTap: () => _showDeleteConfirmation(context, task, taskProvider),
         ),
       ],
@@ -709,7 +806,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEnhancedFAB() {
+  Widget _buildEnhancedFAB(ThemeProvider themeProvider) {
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
@@ -717,13 +814,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           scale: (_pulseAnimation.value * 0.9).clamp(0.5, 1.5),
           child: Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-              ),
+              gradient: LinearGradient(colors: themeProvider.primaryGradient),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667EEA).withValues(alpha: 0.4),
+                  color: themeProvider.primaryColor.withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -820,6 +915,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showAddTaskDialog(BuildContext context) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     DateTime? selectedTime;
     Duration? selectedReminderOffset;
     final List<Duration> reminderOptions = [
@@ -849,9 +945,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    colors: [Colors.white, Color(0xFFF7FAFC)],
-                  ),
+                  gradient: LinearGradient(colors: themeProvider.cardGradient),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -859,8 +953,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                        gradient: LinearGradient(
+                          colors: themeProvider.primaryGradient,
                         ),
                         shape: BoxShape.circle,
                       ),
@@ -871,30 +965,93 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Add New Task',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: themeProvider.textColor,
                       ),
                     ),
                     const SizedBox(height: 20),
                     TextField(
                       controller: titleController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: themeProvider.textColor,
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Title',
+                        labelStyle: TextStyle(
+                          color: themeProvider.textSecondaryColor,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: themeProvider.backgroundColor.withValues(
+                          alpha: 0.1,
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: descController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: themeProvider.textColor,
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Description',
+                        labelStyle: TextStyle(
+                          color: themeProvider.textSecondaryColor,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: themeProvider.backgroundColor.withValues(
+                          alpha: 0.1,
                         ),
                       ),
                     ),
@@ -905,6 +1062,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           selectedTime == null
                               ? 'No time chosen'
                               : _formatTime(selectedTime!),
+                          style: TextStyle(
+                            color: themeProvider.textColor,
+                            fontSize: 16,
+                          ),
                         ),
                         const Spacer(),
                         ElevatedButton.icon(
@@ -929,7 +1090,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           icon: const Icon(Icons.access_time),
                           label: const Text('Pick Time'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF667EEA),
+                            backgroundColor: themeProvider.primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -941,17 +1102,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<Duration>(
                       value: selectedReminderOffset ?? Duration.zero,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: themeProvider.textColor,
+                        fontSize: 16,
+                      ),
+                      dropdownColor: themeProvider.cardColor,
+                      decoration: InputDecoration(
                         labelText: 'Remind me',
+                        labelStyle: TextStyle(
+                          color: themeProvider.textSecondaryColor,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: themeProvider.backgroundColor.withValues(
+                          alpha: 0.1,
                         ),
                       ),
                       items: List.generate(
                         reminderOptions.length,
                         (i) => DropdownMenuItem(
                           value: reminderOptions[i],
-                          child: Text(reminderLabels[i]),
+                          child: Text(
+                            reminderLabels[i],
+                            style: TextStyle(color: themeProvider.textColor),
+                          ),
                         ),
                       ),
                       onChanged: (value) {
@@ -966,6 +1162,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Expanded(
                           child: TextButton(
                             onPressed: () => Navigator.of(context).pop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: themeProvider.textSecondaryColor,
+                            ),
                             child: const Text('Cancel'),
                           ),
                         ),
@@ -997,7 +1196,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF667EEA),
+                              backgroundColor: themeProvider.primaryColor,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1021,6 +1220,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showEditTaskDialog(BuildContext context, Task task) {
     final titleController = TextEditingController(text: task.title);
     final descController = TextEditingController(text: task.description);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     DateTime selectedTime = task.dateTime;
     showDialog(
       context: context,
@@ -1035,9 +1235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    colors: [Colors.white, Color(0xFFF7FAFC)],
-                  ),
+                  gradient: LinearGradient(colors: themeProvider.cardGradient),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1045,8 +1243,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF38B2AC), Color(0xFF319795)],
+                        gradient: LinearGradient(
+                          colors: themeProvider.successGradient,
                         ),
                         shape: BoxShape.circle,
                       ),
@@ -1057,37 +1255,106 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Edit Task',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: themeProvider.textColor,
                       ),
                     ),
                     const SizedBox(height: 20),
                     TextField(
                       controller: titleController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: themeProvider.textColor,
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Title',
+                        labelStyle: TextStyle(
+                          color: themeProvider.textSecondaryColor,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: themeProvider.backgroundColor.withValues(
+                          alpha: 0.1,
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: descController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        color: themeProvider.textColor,
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Description',
+                        labelStyle: TextStyle(
+                          color: themeProvider.textSecondaryColor,
+                        ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.textSecondaryColor.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeProvider.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: themeProvider.backgroundColor.withValues(
+                          alpha: 0.1,
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Text(_formatTime(selectedTime)),
+                        Text(
+                          _formatTime(selectedTime),
+                          style: TextStyle(
+                            color: themeProvider.textColor,
+                            fontSize: 16,
+                          ),
+                        ),
                         const Spacer(),
                         ElevatedButton.icon(
                           onPressed: () async {
@@ -1111,7 +1378,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           icon: const Icon(Icons.access_time),
                           label: const Text('Pick Time'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF38B2AC),
+                            backgroundColor: themeProvider.successColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -1126,6 +1393,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Expanded(
                           child: TextButton(
                             onPressed: () => Navigator.of(context).pop(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: themeProvider.textSecondaryColor,
+                            ),
                             child: const Text('Cancel'),
                           ),
                         ),
@@ -1150,7 +1420,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF38B2AC),
+                              backgroundColor: themeProvider.successColor,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
