@@ -1,5 +1,10 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'task.dart';
+
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
 
 class TaskAdapter extends TypeAdapter<Task> {
   @override
@@ -17,13 +22,14 @@ class TaskAdapter extends TypeAdapter<Task> {
       description: fields[2] as String,
       dateTime: fields[3] as DateTime,
       isCompleted: fields[4] as bool,
+      reminderDateTime: fields[5] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -33,7 +39,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(3)
       ..write(obj.dateTime)
       ..writeByte(4)
-      ..write(obj.isCompleted);
+      ..write(obj.isCompleted)
+      ..writeByte(5)
+      ..write(obj.reminderDateTime);
   }
 
   @override

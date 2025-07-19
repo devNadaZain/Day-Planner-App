@@ -18,6 +18,7 @@ class NotificationService {
 
   static Future<void> scheduleNotification(Task task) async {
     if (task.reminderDateTime == null) return;
+
     final androidDetails = AndroidNotificationDetails(
       'task_reminder_channel',
       'Task Reminders',
@@ -25,16 +26,16 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
     );
+
     final details = NotificationDetails(android: androidDetails);
+
     await _notificationsPlugin.zonedSchedule(
       task.id.hashCode,
       'Task Reminder',
       task.title,
       tz.TZDateTime.from(task.reminderDateTime!, tz.local),
       details,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
     );
   }
