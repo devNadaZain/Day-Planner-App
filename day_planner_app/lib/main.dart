@@ -5,11 +5,13 @@ import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'services/local_storage_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await LocalStorageService.init();
+  await NotificationService.init(); // Initialize notification service
   final themeProvider = ThemeProvider();
   await themeProvider.init();
   runApp(

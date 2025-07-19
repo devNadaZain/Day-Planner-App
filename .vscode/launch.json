@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "day_planner_app",
+            "cwd": "day_planner_app",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "day_planner_app (profile mode)",
+            "cwd": "day_planner_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "day_planner_app (release mode)",
+            "cwd": "day_planner_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
