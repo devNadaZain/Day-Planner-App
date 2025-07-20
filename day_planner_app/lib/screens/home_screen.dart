@@ -112,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Enhanced Background with Theme Support
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -124,14 +123,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: SafeArea(
               child: Column(
                 children: [
-                  // Enhanced App Bar
-                  _buildEnhancedAppBar(themeProvider),
 
-                  // Stats Card
+                  _buildEnhancedAppBar(themeProvider),
                   if (totalTasks > 0)
                     _buildStatsCard(completedTasks, totalTasks, themeProvider),
 
-                  // Main Content
                   Expanded(
                     child: Container(
                       margin: const EdgeInsets.only(top: 20),
@@ -177,7 +173,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(
         children: [
-          // Enhanced Profile Section
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
@@ -197,7 +192,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                // Enhanced Avatar with Shimmer Effect
                 AnimatedBuilder(
                   animation: _shimmerAnimation,
                   builder: (context, child) {
